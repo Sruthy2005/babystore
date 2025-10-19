@@ -34,5 +34,40 @@ class Order {
             return false;
         }
     }
+
+    // Get all orders of a specific user
+    public function getOrdersByUser($userId){
+        $sql = "SELECT * FROM orders WHERE user_id=$userId ORDER BY created_at DESC";
+        $result = $this->db->conn->query($sql);
+        $orders = [];
+        while($row = $result->fetch_assoc()){
+            $orders[] = $row;
+        }
+        return $orders;
+    }
+
+    // Get details of a specific order (items)
+    public function getOrderById($orderId){
+        $sql = "SELECT * FROM orders WHERE id=$orderId";
+        $result = $this->db->conn->query($sql);
+        if($result->num_rows > 0){
+            $order = $result->fetch_assoc();
+
+            // Fetch items
+            $sqlItems = "SELECT oi.*, p.name, p.image 
+                         FROM order_items oi 
+                         JOIN products p ON oi.product_id=p.id 
+                         WHERE oi.order_id=$orderId";
+            $itemsRes = $this->db->conn->query($sqlItems);
+            $items = [];
+            while($item = $itemsRes->fetch_assoc()){
+                $items[] = $item;
+            }
+
+            $order['items'] = $items;
+            return $order;
+        }
+        return false;
+    }
 }
 ?>

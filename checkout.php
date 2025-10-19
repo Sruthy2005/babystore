@@ -4,6 +4,12 @@ require_once "config.php";
 require_once "classes/Cart.php";
 require_once "classes/Product.php";
 
+// Redirect to login if user is not logged in
+if(!isset($_SESSION['user_id'])){
+    header("Location: login.php?redirect=checkout.php");
+    exit;
+}
+
 $cartObj = new Cart();
 $productObj = new Product();
 $items = $cartObj->getItems();
@@ -23,9 +29,12 @@ foreach ($items as $id => $item) {
 // Convert to paise for Razorpay
 $amount = $total * 100;
 
+// Prefill user info
+$userName = $_SESSION['user_name'] ?? 'Guest';
+$userEmail = $_SESSION['user_email'] ?? 'guest@example.com';
+
 include "includes/header.php";
 ?>
-
 
 <h2 class="text-center my-4">🛒 Checkout</h2>
 
@@ -66,8 +75,8 @@ include "includes/header.php";
         data-name="Baby Store"
         data-description="Baby Products Payment"
         data-image="assets/images/logo.png"
-        data-prefill.name="Guest"
-        data-prefill.email="guest@example.com"
+        data-prefill.name="<?= $userName; ?>"
+        data-prefill.email="<?= $userEmail; ?>"
         data-theme.color="#0d6efd">
     </script>
     <input type="hidden" name="cart_total" value="<?= $total; ?>">

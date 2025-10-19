@@ -9,9 +9,22 @@ class User {
 
     // Register new user
     public function register($name, $email, $password){
+        // Check if email already exists
+        $check = $this->db->conn->query("SELECT * FROM users WHERE email='$email'");
+        if($check->num_rows > 0){
+            return "Email already registered!";
+        }
+
+        // Hash password
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+        // Insert new user
         $sql = "INSERT INTO users (name,email,password) VALUES ('$name','$email','$passwordHash')";
-        return $this->db->conn->query($sql);
+        if($this->db->conn->query($sql)){
+            return true;
+        } else {
+            return "Error registering user: " . $this->db->conn->error;
+        }
     }
 
     // Login user
@@ -23,6 +36,7 @@ class User {
             if(password_verify($password, $user['password'])){
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
+                $_SESSION['user_email'] = $user['email']; // useful for checkout prefill
                 return true;
             }
         }
